@@ -1,5 +1,6 @@
 import torch.nn as nn
 
+
 class MLP(nn.Module):
     def __init__(self, input_size, n_hidden, output_size):
         super().__init__()
@@ -8,7 +9,7 @@ class MLP(nn.Module):
             nn.ReLU(),
             nn.Linear(n_hidden, n_hidden),
             nn.ReLU(),
-            nn.Linear(n_hidden, output_size)
+            nn.Linear(n_hidden, output_size),
         )
 
     def forward(self, x):

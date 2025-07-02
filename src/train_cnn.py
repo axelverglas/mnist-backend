@@ -4,6 +4,7 @@ from model.convnet import ConvNet
 from model.train import train, test
 from model.load_mnist import get_dataloaders
 
+
 def main():
     # Choix du device
     if torch.cuda.is_available():
@@ -37,6 +38,7 @@ def main():
     os.makedirs("model", exist_ok=True)
     torch.save(model.state_dict(), "model/mnist-0.0.1.pt")
     print("✅ Modèle CNN sauvegardé dans model/mnist-0.0.1.pt")
+
 
 if __name__ == "__main__":
     main()

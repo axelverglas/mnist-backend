@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 
+
 def train(model, train_loader, device, perm=None, n_epoch=1):
     if perm is None:
         perm = torch.arange(0, 784).long()  # Permutation par défaut (identité)

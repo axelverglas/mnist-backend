@@ -1,5 +1,6 @@
 import sys
 import os
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
@@ -30,6 +31,7 @@ app.add_middleware(
 MODEL = None
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 def load_model():
     """Load the saved model"""
     global MODEL
@@ -37,19 +39,22 @@ def load_model():
         try:
             # Create an instance of the model
             MODEL = ConvNet(input_size=(1, 28, 28), n_kernels=6, output_size=10)
-            
+
             # Load the saved weights
-            model_path = os.path.join(os.path.dirname(__file__), '../../model/mnist-0.0.1.pt')
+            model_path = os.path.join(
+                os.path.dirname(__file__), "../../model/mnist-0.0.1.pt"
+            )
             MODEL.load_state_dict(torch.load(model_path, map_location=DEVICE))
             MODEL.to(DEVICE)
             MODEL.eval()
-            
+
             print(f"Model loaded successfully on {DEVICE}")
         except Exception as e:
             print(f"Error loading the model: {e}")
             raise e
-    
+
     return MODEL
+
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     """
@@ -63,7 +68,7 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
         # Open the image with PIL
         image = Image.open(io.BytesIO(image_bytes))
         # Convert to grayscale
-        image = image.convert('L')
+        image = image.convert("L")
         # Resize to 28x28
         image = image.resize((28, 28))
         # Convert to numpy array
@@ -73,9 +78,12 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
         # Apply the same normalization as during training
         image_array = (image_array - 0.1307) / 0.3081
         return image_array
-        
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error during preprocessing: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Error during preprocessing: {str(e)}"
+        )
+
 
 def predict(image_array: np.ndarray, model: torch.nn.Module) -> dict:
     """
@@ -98,21 +106,26 @@ def predict(image_array: np.ndarray, model: torch.nn.Module) -> dict:
         result = {
             "predicted_digit": int(predicted_class),
             "confidence": float(confidence),
-            "probabilities": probabilities[0].cpu().numpy().tolist()
+            "probabilities": probabilities[0].cpu().numpy().tolist(),
         }
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erreur lors de la prédiction: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Erreur lors de la prédiction: {str(e)}"
+        )
+
 
 @app.get("/")
 async def root():
     """Base endpoint to check if the API is running"""
     return {"message": "MNIST Digit Recognition API is running!"}
 
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "device": str(DEVICE)}
+
 
 @app.post("/api/v1/predict")
 async def predict_digit(file: UploadFile = File(...)):
@@ -120,9 +133,9 @@ async def predict_digit(file: UploadFile = File(...)):
     Main endpoint for digit recognition
     """
     # Check the file type
-    if not file.content_type.startswith('image/'):
+    if not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="The file must be an image")
-    
+
     try:
         # Read the file content
         image_bytes = await file.read()
@@ -133,12 +146,14 @@ async def predict_digit(file: UploadFile = File(...)):
         # Do the prediction
         result = predict(image_array, model)
         return result
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
