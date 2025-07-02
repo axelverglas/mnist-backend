@@ -1,7 +1,6 @@
 import sys
 import os
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import io
 
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,11 +8,11 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 from PIL import Image
-import io
 
-
-# Import the ConvNet class from the model module
 from model.convnet import ConvNet
+
+# Ajouter le parent au PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Initialize FastAPI
 app = FastAPI(title="MNIST Digit Recognition API", version="1.0.0")
